@@ -22,6 +22,8 @@ kotlin {
     jvmToolchain(8)
 }
 
-manifest.attributes(
-    "Main-Class" to "MainKt"
-)
+tasks.jar {
+    manifest.attributes(
+        "Main-Class" to "MainKt"
+    )
+}
