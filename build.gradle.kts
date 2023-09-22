@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ksmn"
-version = "1.0"
+version = "1.1"
 
 repositories {
     mavenCentral()
@@ -26,4 +26,10 @@ tasks.jar {
     manifest.attributes(
         "Main-Class" to "MainKt"
     )
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    configurations["compileClasspath"].forEach { file : File ->
+        from(zipTree(file.absoluteFile))
+    }
 }
