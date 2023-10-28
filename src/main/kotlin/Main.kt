@@ -10,6 +10,7 @@ val MAPPINGS = mapOf(
     "textures/entity/endercrystal" to "textures/entity/end_crystal",
     "textures/items" to "textures/item",
     "apple_golden.png" to "golden_apple.png",
+    "totem.png" to "totem_of_undying.png"
 )
 
 val DIAMOND_TO_NETHERITE = "diamond_" to "netherite_"
