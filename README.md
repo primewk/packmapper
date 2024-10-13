@@ -6,8 +6,7 @@ simple 1.12.2 to 1.21.1 pack converter
 
 # Downloading
 
-You can download stable prebuilt JARs from [the releases page](https://github.com/kisman2000/packmapper/releases)
-
+You can download stable prebuilt JARs from [the releases page](https://github.com/primewk/packmapper/releases/latest)
 # Usage
 
 To use packmapper you need to have zip file of your pack
