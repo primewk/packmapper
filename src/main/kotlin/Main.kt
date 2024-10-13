@@ -10,7 +10,9 @@ val MAPPINGS = mapOf(
     "textures/entity/endercrystal" to "textures/entity/end_crystal",
     "textures/items" to "textures/item",
     "apple_golden.png" to "golden_apple.png",
-    "totem.png" to "totem_of_undying.png"
+    "totem.png" to "totem_of_undying.png",
+    "models/block" to "models/block.json",
+    "models/item" to "models/item.json"
 )
 
 val DIAMOND_TO_NETHERITE = "diamond_" to "netherite_"
@@ -54,6 +56,10 @@ fun main(
         name : String
     ) : String {
         var mappedName = name
+
+        if (name.startsWith("assets/minecraft/models/")) {
+            return name // exclude models directory from mapping
+        }
 
         for((old, new) in MAPPINGS) {
             mappedName = mappedName.replace(old, new)
