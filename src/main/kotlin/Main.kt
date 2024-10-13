@@ -1,5 +1,7 @@
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -76,11 +78,12 @@ fun main(args: Array<String>) {
             val name = inputEntry.name
             val mappedName = mapName(name)
             val `is` = inputZipFile.getInputStream(inputEntry)
-            val bytes = `is`.readBytes()
             val outputEntry = ZipEntry(mappedName)
 
             zos.putNextEntry(outputEntry)
-            zos.write(bytes)
+
+            `is`.copyTo(zos)
+
             zos.closeEntry()
         }
 
