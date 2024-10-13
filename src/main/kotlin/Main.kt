@@ -17,19 +17,15 @@ val MAPPINGS = mapOf(
 
 val DIAMOND_TO_NETHERITE = "diamond_" to "netherite_"
 
-fun main(
-    args : Array<String>
-) {
+fun main(args: Array<String>) {
     val timestamp = System.currentTimeMillis()
 
-    fun exit(
-        message : String
-    ) {
+    fun exit(message: String) {
         println("$message\nUsage: <path to 1.12.2 zipped pack> <path to 1.20.1 zipped pack> <true/false: using diamond textures as netherite textures>")
         exitProcess(0)
     }
 
-    if(args.size != 3) {
+    if (args.size != 3) {
         exit("Not enough arguments!")
     }
 
@@ -40,57 +36,59 @@ fun main(
     val inputFile = File(inputName)
     val outputFile = File(outputName)
 
-    val inputZipFile = ZipFile(inputFile)
+    try {
+        val inputZipFile = ZipFile(inputFile)
 
-    if(outputFile.exists()) {
-        println("Output file will be overwritten")
+        if (outputFile.exists()) {
+            println("Output file will be overwritten")
+            outputFile.delete()
+        }
 
-        outputFile.delete()
+        outputFile.createNewFile()
+
+        var counter = 0
+
+        fun mapName(name: String): String {
+            var mappedName = name
+
+            if (name.startsWith("assets/minecraft/models/")) {
+                return name // exclude models directory from mapping
+            }
+
+            for ((old, new) in MAPPINGS) {
+                mappedName = mappedName.replace(old, new)
+            }
+
+            if (diamondToNetherite) {
+                mappedName = mappedName.replace(DIAMOND_TO_NETHERITE.first, DIAMOND_TO_NETHERITE.second)
+            }
+
+            if (name != mappedName) {
+                counter++
+            }
+
+            return mappedName
+        }
+
+        val zos = ZipOutputStream(FileOutputStream(outputFile))
+
+        for (inputEntry in inputZipFile.entries()) {
+            val name = inputEntry.name
+            val mappedName = mapName(name)
+            val `is` = inputZipFile.getInputStream(inputEntry)
+            val bytes = `is`.readBytes()
+            val outputEntry = ZipEntry(mappedName)
+
+            zos.putNextEntry(outputEntry)
+            zos.write(bytes)
+            zos.closeEntry()
+        }
+
+        zos.close()
+
+        println("Mapped $counter zip entries! Everything took ${System.currentTimeMillis() - timestamp} ms!")
+    } catch (e: Exception) {
+        println("An error occurred: ${e.message}")
+        exitProcess(1)
     }
-
-    outputFile.createNewFile()
-
-    var counter = 0
-
-    fun mapName(
-        name : String
-    ) : String {
-        var mappedName = name
-
-        if (name.startsWith("assets/minecraft/models/")) {
-            return name // exclude models directory from mapping
-        }
-
-        for((old, new) in MAPPINGS) {
-            mappedName = mappedName.replace(old, new)
-        }
-
-        if(diamondToNetherite) {
-            mappedName = mappedName.replace(DIAMOND_TO_NETHERITE.first, DIAMOND_TO_NETHERITE.second)
-        }
-
-        if(name != mappedName) {
-            counter++
-        }
-
-        return mappedName
-    }
-
-    val zos = ZipOutputStream(FileOutputStream(outputFile))
-
-    for(inputEntry in inputZipFile.entries()) {
-        val name = inputEntry.name
-        val mappedName = mapName(name)
-        val `is` = inputZipFile.getInputStream(inputEntry)
-        val bytes = `is`.readBytes()
-        val outputEntry = ZipEntry(mappedName)
-
-        zos.putNextEntry(outputEntry)
-        zos.write(bytes)
-        zos.closeEntry()
-    }
-
-    zos.close()
-
-    println("Mapped $counter zip entries! Everything took ${System.currentTimeMillis() - timestamp} ms!")
 }
