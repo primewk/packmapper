@@ -4,6 +4,7 @@
 
 simple 1.12.2 to 1.21.1 pack converter
 
+still has a few issues, I'll fix them dw.
 # Downloading
 
 You can download stable prebuilt JARs from [the releases page](https://github.com/primewk/packmapper/releases/latest)
