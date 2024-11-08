@@ -12,9 +12,7 @@ val MAPPINGS = mapOf(
     "textures/entity/endercrystal" to "textures/entity/end_crystal",
     "textures/items" to "textures/item",
     "apple_golden.png" to "golden_apple.png",
-    "totem.png" to "totem_of_undying.png",
-    "models/block" to "models/block.json",
-    "models/item" to "models/item.json"
+    "totem.png" to "totem_of_undying.png"
 )
 
 val DIAMOND_TO_NETHERITE = "diamond_" to "netherite_"
@@ -53,18 +51,22 @@ fun main(args: Array<String>) {
         fun mapName(name: String): String {
             var mappedName = name
 
+            // Exclude models directory from mapping
             if (name.startsWith("assets/minecraft/models/")) {
-                return name // exclude models directory from mapping
+                return name // Skip JSON model files
             }
 
+            // Perform mappings based on the defined mappings
             for ((old, new) in MAPPINGS) {
                 mappedName = mappedName.replace(old, new)
             }
 
+            // Handle diamond to netherite texture mapping
             if (diamondToNetherite) {
                 mappedName = mappedName.replace(DIAMOND_TO_NETHERITE.first, DIAMOND_TO_NETHERITE.second)
             }
 
+            // Count how many names have changed
             if (name != mappedName) {
                 counter++
             }
