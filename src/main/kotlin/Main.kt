@@ -1,7 +1,6 @@
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -21,7 +20,7 @@ fun main(args: Array<String>) {
     val timestamp = System.currentTimeMillis()
 
     fun exit(message: String) {
-        println("$message\nUsage: <path to 1.12.2 zipped pack> <path to 1.20.1 zipped pack> <true/false: using diamond textures as netherite textures>")
+        println("$message\nUsage: <path to 1.12.2 zipped pack> <path to 1.20.1 output directory> <true/false: using diamond textures as netherite textures>")
         exitProcess(0)
     }
 
@@ -30,61 +29,73 @@ fun main(args: Array<String>) {
     }
 
     val inputName = args[0]
-    val outputName = args[1]
+    val outputDirName = args[1]
     val diamondToNetherite = args[2].toBoolean()
 
     val inputFile = File(inputName)
-    val outputFile = File(outputName)
+    val outputDir = File(outputDirName)
+
+    if (!inputFile.exists() || !inputFile.isFile) {
+        exit("Input file does not exist or is not a valid file!")
+    }
+
+    if (outputDir.exists()) {
+        println("Output directory will be overwritten")
+        outputDir.deleteRecursively()
+    }
+
+    outputDir.mkdirs() // Create the output directory
+
+    var counter = 0
+
+    fun mapName(name: String): String {
+        var mappedName = name
+
+        // Exclude models directory from mapping
+        if (name.startsWith("assets/minecraft/models/")) {
+            return name // Skip JSON model files
+        }
+
+        // Perform mappings based on the defined mappings
+        for ((old, new) in MAPPINGS) {
+            mappedName = mappedName.replace(old, new)
+        }
+
+        // Handle diamond to netherite texture mapping
+        if (diamondToNetherite) {
+            mappedName = mappedName.replace(DIAMOND_TO_NETHERITE.first, DIAMOND_TO_NETHERITE.second)
+        }
+
+        // Count how many names have changed
+        if (name != mappedName) {
+            counter++
+        }
+
+        return mappedName
+    }
 
     try {
         val inputZipFile = ZipFile(inputFile)
-
-        if (outputFile.exists()) {
-            println("Output file will be overwritten")
-            outputFile.delete()
-        }
-
-        outputFile.createNewFile()
-
-        var counter = 0
-
-        fun mapName(name: String): String {
-            var mappedName = name
-
-            // Exclude models directory from mapping
-            if (name.startsWith("assets/minecraft/models/")) {
-                return name // Skip JSON model files
-            }
-
-            // Perform mappings based on the defined mappings
-            for ((old, new) in MAPPINGS) {
-                mappedName = mappedName.replace(old, new)
-            }
-
-            // Handle diamond to netherite texture mapping
-            if (diamondToNetherite) {
-                mappedName = mappedName.replace(DIAMOND_TO_NETHERITE.first, DIAMOND_TO_NETHERITE.second)
-            }
-
-            // Count how many names have changed
-            if (name != mappedName) {
-                counter++
-            }
-
-            return mappedName
-        }
-
-        val zos = ZipOutputStream(FileOutputStream(outputFile))
+        val zos = ZipOutputStream(FileOutputStream(File(outputDir, "output.zip"))) // Create a zip file in the output directory
 
         for (inputEntry in inputZipFile.entries()) {
             val name = inputEntry.name
             val mappedName = mapName(name)
-            val `is` = inputZipFile.getInputStream(inputEntry)
+
+            // Create the output entry
             val outputEntry = ZipEntry(mappedName)
+
+            // Ensure the output entry's parent directories exist
+            val parentDir = File(mappedName).parent
+            if (parentDir != null) {
+                zos.putNextEntry(ZipEntry("$parentDir/")) // Ensure parent directories are created
+            }
 
             zos.putNextEntry(outputEntry)
 
-            `is`.copyTo(zos)
+            inputZipFile.getInputStream(inputEntry).use { inputStream ->
+                inputStream.copyTo(zos)
+            }
 
             zos.closeEntry()
         }
